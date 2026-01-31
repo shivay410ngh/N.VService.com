@@ -370,7 +370,13 @@
                         </button>
                         <button class="nav-btn logout-btn" id="logoutBtn">🚪 Logout</button>
                     </div>
-                    <div class="balance">💰 Balance: <span class="balance-amount">₹12,450</span></div>
+                    let balance = localStorage.getItem("userBalance");
+if (!balance) {
+  balance = 0;
+  localStorage.setItem("userBalance", balance);
+}
+
+document.querySelector(".balance-amount").innerText = "₹" + balance;
                     <div class="user-avatar" id="userAvatar">U</div>
                 </div>
             </header>
