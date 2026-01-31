@@ -370,13 +370,7 @@
                         </button>
                         <button class="nav-btn logout-btn" id="logoutBtn">🚪 Logout</button>
                     </div>
-                    let balance = localStorage.getItem("userBalance");
-if (!balance) {
-  balance = 0;
-  localStorage.setItem("userBalance", balance);
-}
-
-document.querySelector(".balance-amount").innerText = "₹" + balance;
+                   <span class="balance-amount">₹0</span>
                     <div class="user-avatar" id="userAvatar">U</div>
                 </div>
             </header>
