@@ -437,7 +437,7 @@
                 <div class="payment-methods">
                     <div class="payment-method">
                         <h5>🇮🇳 Indian Payment (UPI)</h5>
-                        <img src="payment-qr.jpg" alt="UPI QR Code" class="qr-code" onerror="this.style.display='none';">
+                        <img src="https://i.ibb.co/8DWsHVJ2/qr.png" alt="UPI QR Code" class="qr-code"> onerror="this.style.display='none';">
                         <div class="payment-details">
                             <div class="payment-detail">
                                 <div class="payment-detail-info">
@@ -464,16 +464,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div style="background: linear-gradient(135deg, rgba(255, 59, 92, 0.2), rgba(0, 245, 255, 0.2)); padding: 1.5rem; border-radius: 12px; border: 2px solid var(--primary); margin-top: 1rem;">
-                    <strong style="color: var(--primary); font-size: 1.1rem;">⚠️ Important Instructions:</strong>
-                    <ol style="margin: 0.5rem 0 0 1.2rem; line-height: 1.8;">
-                        <li>Pehle payment karein (UPI ya Bitcoin)</li>
-                        <li>Payment ke baad Transaction ID/UTR Number niche enter karein</li>
-                        <li>Order submit karein</li>
-                        <li>Admin approval wait karein (10-30 minutes)</li>
-                        <li>Approval ke baad order start hoga</li>
-                    </ol>
+                
                 </div>
             </div>
             <form id="orderForm">
@@ -658,6 +649,11 @@
                     document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
                     renderServices();
                     loadPendingOrders();
+                    const adminBtn = document.querySelector('[data-section="admin"]');
+
+if (currentUser.email !== ADMIN_EMAIL) {
+    adminBtn.style.display = "none";
+}
                 }, 1000);
             } else {
                 showAuthError('❌ Invalid email or password!');
@@ -714,7 +710,14 @@
                 document.getElementById('adminContainer').classList.remove('active');
                 document.getElementById(section + 'Container').classList.add('active');
                 if (section === 'history') loadOrderHistory();
-                if (section === 'admin') loadPendingOrders();
+                if (section === 'admin') {
+    if (currentUser.email !== ADMIN_EMAIL) {
+        alert("Access Denied!");
+        document.querySelector('[data-section="services"]').click();
+        return;
+    }
+    loadPendingOrders();
+}
             });
         });
 
